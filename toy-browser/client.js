@@ -99,16 +99,16 @@ class Response {
             this.status(str.charAt(i));
         }
 
-        
+
     }
 
-    getResponse(){
+    getResponse() {
         return {
-            code:this.statusCode,
-            protocol:this.protocol,
-            status:this.statusPrompt,
-            headers:this.headers,
-            body:this.bodyText,
+            code: this.statusCode,
+            protocol: this.protocol,
+            status: this.statusPrompt,
+            headers: this.headers,
+            body: this.bodyText,
         }
     }
 
@@ -150,17 +150,17 @@ class Response {
     }
 
     parseHeaderVaule(char) {
-        if ([' ','\r'].includes(char)) return;
+        if ([' ', '\r'].includes(char)) return;
 
-        if (char==='\n') {
+        if (char === '\n') {
             const { headerName, headerValue } = this;
             this.headers[headerName] = headerValue;
             this.headerName = '',
                 this.headerValue = '';
 
-                if(this.headers['Transfer-Encoding']==='chunked'){
-                    this.bodyParse = new ChunkParse;
-                }
+            if (this.headers['Transfer-Encoding'] === 'chunked') {
+                this.bodyParse = new ChunkParse;
+            }
             this.status = this.parseEnter;
 
             return;
@@ -185,36 +185,52 @@ class Response {
         }
     }
 
-    parseBody(char){
+    parseBody(char) {
         this.bodyText += this.bodyParse.receiverChar(char);
     }
 
 }
 
-class ChunkParse{
-    constructor(){
+class ChunkParse {
+    constructor() {
         this.length = '0x';
         this.status = this.parseLength;
         // this.bodyText = '';
     }
 
-    receiverChar(char){
-        return this.status(char)||'';
+    receiverChar(char) {
+        return this.status(char) || '';
     }
 
-    parseLength(char){
-        if(char ==='\r') return;
-        if(char==='\n'){
+    parseLength(char) {
+        if (char === '\r') return;
+        if (char === '\n') {
             this.length = parseInt(this.length);
             this.status = this.parseBody;
             return;
         }
 
-        this.length+=char;
+        this.length += char;
     }
 
-    parseBody(char){
-        if(this.length===0) return;
+    parseEnd(char) {
+        if(char ==='\n') {
+            this.status = this.parseLength;
+            return;
+        }
+    }
+
+
+    parseBody(char) {
+        if (this.length === 0) {
+            if (char === '\r') return;
+
+            if (char==='\n'){
+                this.status = this.parseEnd;
+
+            }
+            return;
+        }
 
         this.length--;
         return char;
@@ -234,7 +250,7 @@ async function get() {
     })
 
     const data = await request.send();
-    console.log(data);
+    // console.log(data);
 
 }
 
