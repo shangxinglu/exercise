@@ -1,6 +1,6 @@
 
 const net = require('net');
-const {parseHTML} = require('./parseHTML');
+const {parseHTML} = require('./parseHTML.js');
 
 const bodyTransMethod = {
     'application/x-www-from-urlencoded': body => {
@@ -251,10 +251,7 @@ async function get() {
     })
 
     const data = await request.send();
-
     const dom = parseHTML(data.body);
-
-
 }
 
 get();
