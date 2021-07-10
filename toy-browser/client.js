@@ -252,6 +252,8 @@ async function get() {
 
     const data = await request.send();
     const dom = parseHTML(data.body);
+    
+    // console.log(JSON.stringify(dom));
 }
 
 get();

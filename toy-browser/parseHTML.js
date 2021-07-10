@@ -10,23 +10,52 @@ let tagName = '', // 标签名
     attrQuotes = '', // 属性引号
     text = ''; // 文本
 
-const stack = [];
+const stack = [{type:'document',children:[]}];
 
 let attrArr = [];
 
+function VNode(tag,attr){
+    return {
+        tag,
+        attr,
+        children:[],
+    }
+}
+
+function textVNode(text){
+    return {
+        text,
+    };
+}
+
 // 解析完一个开始标签触发
-function hookStart(tag) {
-    console.log('start', tag);
+function hookStart(tag,attr,isCloseTag=false) {
+    const vnode = VNode(tag,attr);
+    const currentNode = stack[stack.length-1];
+    vnode.parent = currentNode;
+    currentNode.children.push(vnode);
+    if(isCloseTag) return;
+    stack.push(vnode);
+
 }
 
 // 解析完一个结束标签触发
 function hookEnd(tag) {
     console.log('end', tag);
+    
+    const vnode = stack.pop();
+    if(vnode.tag!==tag){
+        throw new Error(tag+'缺少闭合标签')
+    }
 }
 
 // 解析到一个文本触发
 function hookText(text) {
     console.log('text', text);
+    if(/^\s+$/.test(text)) return;
+    const textVnode = textVNode(text);
+    const currentNode = stack[stack.length-1];
+    currentNode.children.push(textVnode);
 }
 
 function parseHTML(body) {
@@ -36,6 +65,7 @@ function parseHTML(body) {
         status = status(c);
     }
 
+    return stack[0];
 }
 
 // 开始解析
@@ -68,7 +98,7 @@ function parseTagName(char) {
     }
 
     if (char === '>') {
-        hookStart(tagName);
+        hookStart(tagName,attrArr);
         tagName = '';
         attrArr = [];
         return start;
@@ -95,7 +125,8 @@ function parseTagClose(char) {
     }
 
     if (char === '>') {
-        hookStart(tagName, isCloseTag);
+        hookStart(tagName,attrArr, isCloseTag);
+        tagName = '';
         attrArr = [];
         isCloseTag = false;
         return start;
@@ -136,7 +167,7 @@ function parseAttrName(char) {
     }
 
     if (char === '>') {
-        hookStart(tagName);
+        hookStart(tagName,attrArr);
         tagName = '';
         attrArr = [];
         return start;
