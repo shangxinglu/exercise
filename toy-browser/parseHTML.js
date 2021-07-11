@@ -1,4 +1,6 @@
 
+const css = require('css');
+
 const letterReg = /[A-Za-z]/, // 字母
     attrReg = /[A-Za-z\-]/, //属性
     spaceReg = /[\n\t\f ]/; // 空格匹配
@@ -10,52 +12,156 @@ let tagName = '', // 标签名
     attrQuotes = '', // 属性引号
     text = ''; // 文本
 
-const stack = [{type:'document',children:[]}];
+const stack = [{ type: 'document', children: [] }];
 
-let attrArr = [];
+const cssRule = []; // CSS解析后的规则
 
-function VNode(tag,attr){
+let attrObj = {};
+
+function VNode(tag, attr) {
     return {
         tag,
         attr,
-        children:[],
+        children: [],
     }
 }
 
-function textVNode(text){
+function textVNode(text) {
     return {
         text,
     };
 }
 
 // 解析完一个开始标签触发
-function hookStart(tag,attr,isCloseTag=false) {
-    const vnode = VNode(tag,attr);
-    const currentNode = stack[stack.length-1];
+function hookStart(tag, attr, isCloseTag = false) {
+    const vnode = VNode(tag, attr);
+    const currentNode = stack[stack.length - 1];
     vnode.parent = currentNode;
     currentNode.children.push(vnode);
-    if(isCloseTag) return;
+
+
+    if (isCloseTag) {
+        matchRule(vnode);
+        return;
+    }
+
     stack.push(vnode);
+    matchRule();
+
 
 }
 
 // 解析完一个结束标签触发
 function hookEnd(tag) {
     console.log('end', tag);
-    
+
     const vnode = stack.pop();
-    if(vnode.tag!==tag){
-        throw new Error(tag+'缺少闭合标签')
+    if (tag === 'style') {
+        parseCSS(vnode.children[0].text);
+    }
+    if (vnode.tag !== tag) {
+        throw new Error(vnode.tag + '缺少闭合标签')
     }
 }
 
 // 解析到一个文本触发
 function hookText(text) {
     console.log('text', text);
-    if(/^\s+$/.test(text)) return;
+    if (/^\s+$/.test(text)) return;
     const textVnode = textVNode(text);
-    const currentNode = stack[stack.length-1];
+    const currentNode = stack[stack.length - 1];
     currentNode.children.push(textVnode);
+}
+
+// 解析CSS
+function parseCSS(text) {
+    const rule = css.parse(text);
+    cssRule.push(...rule.stylesheet.rules);
+}
+
+// CSS规则匹配
+function matchRule(node) {
+    const tempList = stack.slice().reverse();
+    if (node) {
+        tempList.unshift(node);
+    }
+    for (let rule of cssRule) {
+        const nodeList = tempList.slice();
+        const result = matchSingleRule(rule, nodeList);
+        if (result) {
+            if (!tempList[0].computedStyle) {
+                tempList[0].computedStyle = {};
+            }
+            const computed = computedStyle(rule);
+
+            Object.assign(tempList[0].computedStyle,computed)
+        }
+    }
+}
+
+// 匹配单条规则
+function matchSingleRule(rule, nodeList) {
+    let node = nodeList.shift();
+    const selector = rule.selectors[0].split(' ').reverse();
+
+    // 匹配单条规则
+    for (let i = 0, len = selector.length; i < len; i++) {
+        let item = selector[i];
+        let isMatch = matchSelector(item, node);
+
+        while (!isMatch) {
+            if (i === 0) return;
+
+            node = nodeList.shift();
+            if (!node) return;
+
+            isMatch = matchSelector(item, node);
+        }
+
+        node = nodeList.shift();
+
+    }
+
+    return true;
+}
+
+// 匹配选择器
+function matchSelector(selector, node) {
+    if (!node) return false;
+
+    let classArr;
+    switch (selector.charAt(0)) {
+        case '#':
+            selector = selector.substring(1);
+            if (node.attr.id !== selector) return;
+            break;
+
+        case '.':
+            selector = selector.substring(1);
+            classArr = node.attr.class?.split?.(' ') || [];
+            if (!classArr.includes(selector)) return;
+            break;
+
+        default:
+            if (selector !== node.tag) return;
+    }
+
+    return true;
+
+}
+
+
+// 计算样式
+function computedStyle(rule) {
+    const { declarations } = rule;
+
+    const style = {};
+    for (let item of declarations) {
+        const { property, value } = item;
+        style[property] = value;
+    }
+
+    return style;
 }
 
 function parseHTML(body) {
@@ -98,9 +204,9 @@ function parseTagName(char) {
     }
 
     if (char === '>') {
-        hookStart(tagName,attrArr);
+        hookStart(tagName, attrObj);
         tagName = '';
-        attrArr = [];
+        attrObj = {};
         return start;
     }
 
@@ -125,9 +231,9 @@ function parseTagClose(char) {
     }
 
     if (char === '>') {
-        hookStart(tagName,attrArr, isCloseTag);
+        hookStart(tagName, attrObj, isCloseTag);
         tagName = '';
-        attrArr = [];
+        attrObj = {};
         isCloseTag = false;
         return start;
     }
@@ -167,9 +273,9 @@ function parseAttrName(char) {
     }
 
     if (char === '>') {
-        hookStart(tagName,attrArr);
+        hookStart(tagName, attrObj);
         tagName = '';
-        attrArr = [];
+        attrObj = {};
         return start;
     }
 
@@ -180,8 +286,8 @@ function parseAttrName(char) {
 
     if (spaceReg.test(char)) {
         if (attrName) {
+            attrObj[attrName] = null;
             attrName = '';
-            attrArr.push(attrName);
 
         }
 
@@ -195,7 +301,7 @@ function parseAttrValue(char) {
     if (['\'', '"'].includes(char)) {
         if (attrQuotes) {
             if (attrQuotes === char) {
-                attrArr.push(`${attrName}="${attrValue}"`);
+                attrObj[attrName] = attrValue;
                 attrName = '',
                     attrValue = '',
                     attrQuotes = '';
