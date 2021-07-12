@@ -1,5 +1,6 @@
 
 const css = require('css');
+const layout = require('./layout.js');
 
 const letterReg = /[A-Za-z]/, // 字母
     attrReg = /[A-Za-z\-]/, //属性
@@ -59,6 +60,9 @@ function hookEnd(tag) {
     if (tag === 'style') {
         parseCSS(vnode.children[0].text);
     }
+
+    layout(vnode);
+    
     if (vnode.tag !== tag) {
         throw new Error(vnode.tag + '缺少闭合标签')
     }
