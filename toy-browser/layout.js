@@ -103,7 +103,74 @@ function layout(el){
             crossBase = 0;
         }
 
+        let isAutoMainSize = false;
+        if(!style[mainSize]){
+            style[mainSize] = 0;
+            for(let child of children){
+                const childStyle = getStyle(child.computedStyle);
+                if(childStyle[mainSize]){
+                    style[mainSize]+=childStyle[mainSize];
+                }
+            }   
 
+            isAutoMainSize = true;
+        }
+
+        let flexLine = [];
+        const flexLines = [flexLine];
+
+        let mainSpace = style[mainSize],
+        crossSpace = 0;
+
+        for(let child of children){
+            const childStyle = getStyle(child.computedStyle);
+            if(!childStyle[mainSize]||childStyle[mainSize]!=='auto'){
+                childStyle[mainSize] = 0;
+            }
+
+            if(childStyle.flex){
+                flexLine.push(child);
+
+            } else if(style.flexWrap==='nowrap'&&isAutoMainSize){
+                mainSpace-=childStyle[mainSize];
+
+                if(childStyle[crossSize]){
+                    crossSpace = Math.max(childStyle[crossSize],crossSpace);
+                }
+
+                flexLine.push(child);
+
+            } else {
+                if(childStyle[mainSize]>style[mainSize]){
+                    childStyle[mainSize] = style[mainSize];
+                }
+
+                if(mainSpace<childStyle[mainSize]){
+                    flexLine.mainSpace = mainSpace;
+                    flexLine.crossSpace = crossSpace;
+
+                    flexLine = [child];
+                    flexLines.push(flexLine);
+
+                    mainSpace = style[mainSize];
+                    crossSpace = 0;
+
+                }else {
+                    flexLine.push(child);
+                }
+
+                if(childStyle[crossSize]){
+                    crossSpace = Math.max(childStyle[crossSize],crossSpace);
+                }
+                
+                mainSpace-=childStyle[mainSize];
+            }
+
+            flexLine.mainSpace = mainSpace;
+            flexLine.crossSpace = crossSpace;
+
+            
+        }   
    
     
 }
