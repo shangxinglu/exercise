@@ -1,6 +1,9 @@
 
 const net = require('net');
+
+
 const {parseHTML} = require('./parseHTML.js');
+const {render} = require('./render.js');
 
 const bodyTransMethod = {
     'application/x-www-from-urlencoded': body => {
@@ -99,7 +102,6 @@ class Response {
         for (let i = 0, len = str.length; i < len; i++) {
             this.status(str.charAt(i));
         }
-
 
     }
 
@@ -252,7 +254,8 @@ async function get() {
 
     const data = await request.send();
     const dom = parseHTML(data.body);
-    
+    render(dom.children[0].children[1].children[0]);
+
     // console.log(JSON.stringify(dom));
 }
 

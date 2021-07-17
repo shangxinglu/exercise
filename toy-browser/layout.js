@@ -131,7 +131,7 @@ function layout(el) {
         if (childStyle.flex) {
             flexLine.push(child);
 
-        } else if (style.flexWrap === 'nowrap' && isAutoMainSize) {
+        } else if (style.flexWrap === 'nowrap' || isAutoMainSize) {
             mainSpace -= childStyle[mainSize];
 
             if (childStyle[crossSize]) {
@@ -197,7 +197,7 @@ function layout(el) {
     } else {
         flexLines.forEach(line => {
             let flexTotal = 0;
-            let {mainSpace,mainBase} = line;
+            let { mainSpace } = line;
 
             for (let child of line) {
                 const childStyle = getStyle(child.computedStyle);
@@ -221,42 +221,163 @@ function layout(el) {
                 }
 
             } else {
-                let step,currentMain;
+                let step, currentMain;
                 switch (style.justifyContent) {
                     case 'flex-start':
                         currentMain = mainBase;
                         step = 0;
                         break;
                     case 'flex-end':
-                        currentMain = line.mainSpace * mainSign;
+                        currentMain = mainBase + mainSpace * mainSign;
                         step = 0;
 
                         break;
 
                     case 'center':
+                        currentMain = mainBase + mainSpace * mainSign / 2;
+                        step = 0;
 
                         break;
 
                     case 'space-between':
-
+                        currentMain = mainBase;
+                        step = mainSpace * mainSign / (flexTotal - 1);
                         break;
 
                     case 'space-around':
-
+                        step = mainSpace * mainSign / children.length;
+                        currentMain = mainBase + step / 2;
                         break;
+                }
+
+                for (let child of line) {
+                    const childStyle = getStyle(child.computedStyle);
 
 
+                    childStyle[mainStart] = currentMain;
+                    childStyle[mainEnd] = currentMain + mainSign * childStyle[mainSize];
+
+                    currentMain = childStyle[mainEnd] + step;
                 }
             }
 
         })
+
+
     }
 
 
 
+    if (!style[crossSize]) {
+        style[crossSize] = 0;
+        crossSpace = 0;
+        for (let line of flexLines) {
+            style[crossSize] += line.crossSpace;
+        }
+    } else {
+        crossSpace = style[crossSize];
+
+        for (let line of flexLines) {
+            crossSpace -= line.crossSpace;
+        }
+    }
+
+    if (style.flexWrap === 'wrap-reverse') {
+        crossBase = style[crossSize];
+    } else {
+        crossBase = 0;
+    }
+
+    let step;
+    switch (style.alignContent) {
+        case 'flex-start':
+            crossBase += 0;
+            step = 0;
+            break;
+
+        case 'flex-end':
+            crossBase += crossSign * crossSpace;
+            step = 0;
+            break;
+
+        case 'space-between':
+            crossBase += 0;
+            step = crossSign * crossSpace / (flexLines.length - 1);
+            break;
+
+        case 'center':
+            crossBase += crossSign * crossSpace / 2;
+            step = 0;
+            break;
+
+        case 'space-around':
+            step = crossSign * crossSpace / flexLines.length;
+            crossBase += step / 2;
+            break;
+
+        case 'stretch':
+            crossBase += 0;
+            step = 0;
+            break;
+
+    }
+
+
+    flexLines.forEach(line => {
+        let lineSpace;
+        if (style.alignContent === 'stretch') {
+            lineSpace = line.crossSpace + crossSpace / flexLines.length;
+        } else {
+            lineSpace = line.crossSpace;
+        }
+        for (let child of line) {
+            const childStyle = getStyle(child.computedStyle);
+
+            let align = childStyle.alignSelf || style.alignItems;
+
+            if (!childStyle[crossSize]) {
+                childStyle[crossSize] = align === 'stretch' ? lineSpace : 0;
+            }
+
+            switch (align) {
+                case 'flex-start':
+                    childStyle[crossStart] = crossBase;
+                    childStyle[crossEnd] = childStyle[crossStart] + childStyle[crossSize] * crossSign;
+                    break;
+
+                case 'flex-end':
+                    childStyle[crossStart] = crossBase + (lineSpace - childStyle[crossSize]) * crossSign;
+                    childStyle[crossEnd] = childStyle[crossStart] + childStyle[crossSize] * crossSign;
+                    break;
+
+                case 'center':
+                    childStyle[crossEnd] = crossBase + lineSpace * crossSign;
+                    childStyle[crossStart] = childStyle[crossEnd] - (lineSpace - childStyle[crossSize]) / 2 * crossSign;
+                    break;
+
+                case 'stretch':
+                    childStyle[crossStart] = crossBase;
+                    childStyle[crossEnd] =  childStyle[crossStart] + (childStyle[crossSize]??lineSpace) * crossSign;
+                    childStyle[crossSize] = (childStyle[crossEnd] - childStyle[crossStart])*crossSign;
+                    break;
+            }
+
+        }
+
+        crossBase += (step+lineSpace)*crossSign;
+
+    })
+
+
+    console.log(el);
+    el.layout = flexLines;
+
+    
+
 }
 
 function getStyle(style) {
+    if(!style) return {};
     for (let key of Object.keys(style)) {
         let item = style[key];
         if (/^[0-9.]+$|px$/.test(item)) {

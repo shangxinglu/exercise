@@ -17,24 +17,35 @@ http.createServer((req,res)=>{
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>Document</title>
             <style>
-                .d1{
-                    width:100px;
-                    height:200px;
+                .flex {
+                    display: flex;
+                    width: 375px;
+                    background-color: rgba(255, 0, 0, 1);
                 }
-
-                div .d2{
-                    height:100px;
-                    background-color:cyan;
+        
+        
+                .d1 {
+                    width: 100px;
+                    height: 50px;
+                    background-color: rgba(255, 255, 0, 1);
+        
                 }
-
-                span .d3{
-                    font-size:24px;
+        
+                .d2 {
+                    width: 200px;
+                    height: 150px;
+                    background-color: rgba(0, 255, 255, 1);
+        
                 }
             </style>
         </head>
+        
         <body>
-            <div class="d1 d3">
-                <span class="d2">我是文本</span>
+            <div class="flex">
+                <div class="d1 flex__item"></div>
+                <div class="d1"></div>
+                <div class="d2"></div>
+                <div class="d3"></div>
             </div>
         </body>
         </html>`);
