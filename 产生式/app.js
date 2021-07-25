@@ -4,12 +4,12 @@ const regexpObj = {
     Program: 'WhiteSpace|LineTerminator|Comment|Token',
     WhiteSpace: / /,
     LineTerminator: /\r|\n/,
-    Comment: /\/\/|\/\*[\s\S]*?\*\//,
+    Comment: /\/\/[^\n]*?|\/\*[\s\S]*?\*\//,
     Token: 'Literal|Keyword|Identifier|Punctuator',
     Literal: 'BooleanLiteral|NumberLiteral|StringLiteral|NullLiteral',
     BooleanLiteral: /true|false/,
     NumberLiteral: /(?:[0-9]|[1-9][0-9]*)(?:\.[0-9]+)?/,
-    StringLiteral: /'(?:[^']|\\')*?'|"(?:[^"]|\\")*?"/,
+    StringLiteral: /'(?:[^'])*?'|"(?:[^"])*?"/,
     NullLiteral: /null/,
     keyword: /var|let|const|if|else[\s]+if|else|switch|case|return|for|while|break|continue/,
     Identifier: /[A-Za-z$_][A-Za-z0-9$_]*/,
@@ -51,6 +51,12 @@ const regexp= new RegExp(mergeRegexp(regexpObj, 'Program'),'g');
 
 
 const code = `
+
+// 注释
+/*
+注释
+*/
+let a = 'str';
 send(connect) {
     return new Promise((resolve, reject) => {
 
