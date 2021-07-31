@@ -4,7 +4,7 @@ const regexpObj = {
     Program: 'WhiteSpace|LineTerminator|Comment|Token',
     WhiteSpace: / /,
     LineTerminator: /\r|\n/,
-    Comment: /\/\/[^\n]*?|\/\*[\s\S]*?\*\//,
+    Comment: /\/\/[^\n]*|\/\*[\s\S]*?\*\//,
     Token: 'Literal|Keyword|Identifier|Punctuator',
     Literal: 'BooleanLiteral|NumberLiteral|StringLiteral|NullLiteral',
     BooleanLiteral: /true|false/,
@@ -16,38 +16,41 @@ const regexpObj = {
     Punctuator: /\(|\)|\{|\}|;|\:|\.|\[|\]|\+|\-|\*|\/|\+\+|\-\-|\=|\=\=|\=\=\=|\>|\<|\,|\!/,
 }
 
-/**
-    函数职责
-        字符串分割，遍历查找对象的属性，
-        如果是正则替换，
-        如果是字符串，重复以上步骤
- */
+function genRegexp( entry) {
 
-function mergeRegexp(obj, entry) {
-    let regepxStr = '';
-    let current = obj[entry], matchArr = [];
+    // 字符串分割，遍历查找对象的属性，
+    // 如果是正则替换，
+    // 如果是字符串，重复以上步骤
+    function mergeRegexp( entry) {
+        let regepxStr = '';
+        let current = regexpObj[entry], matchArr = [];
 
-    if (typeof current === 'string') {
+        if (typeof current === 'string') {
 
-        for (let item of current.split('|')) {
-            let child = obj[item];
-            if (child instanceof RegExp) {
-                matchArr.push(`(?<${item}>${child.source})`);
+            for (let item of current.split('|')) {
+                let child = regexpObj[item];
+                if (child instanceof RegExp) {
+                    matchArr.push(`(?<${item}>${child.source})`);
+                }
+
+                if (typeof child === 'string') {
+                    matchArr.push(mergeRegexp(item));
+                }
             }
 
-            if (typeof child === 'string') {
-                matchArr.push(mergeRegexp(obj, item));
-            }
+            regepxStr = matchArr.join('|');
+
         }
 
-        regepxStr = matchArr.join('|');
-
+        return regepxStr;
     }
 
-    return regepxStr;
+    const regexp = new RegExp(mergeRegexp(entry), 'g');
+
+    return regexp;
+
 }
 
-const regexp= new RegExp(mergeRegexp(regexpObj, 'Program'),'g');
 
 
 const code = `
@@ -93,8 +96,30 @@ send(connect) {
 
 `;
 
+const regexp = genRegexp(regexpObj, 'Program');
+
+
 let match;
-while(match = regexp.exec(code)){
-   debugger
-    document.write(match[0]);
+while (match = regexp.exec(code)) {
+    const { groups } = match;
+
+    if (groups.WhiteSpace) {
+
+    } else if (groups.LineTerminator) {
+
+    } else if (groups.Comment) {
+
+    } else if (groups.NumberLiteral) {
+
+    } else if (groups.StringLiteral) {
+
+    } else if (groups.NullLiteral) {
+
+    } else if (groups.keyword) {
+
+    } else if (groups.Identifier) {
+
+    } else if (groups.Punctuator) {
+
+    }
 }
