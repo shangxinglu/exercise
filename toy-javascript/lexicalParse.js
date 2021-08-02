@@ -8,7 +8,7 @@ const regexpObj = {
     Token: 'Literal|Keyword|Identifier|Punctuator',
     Literal: 'BooleanLiteral|NumberLiteral|StringLiteral|NullLiteral',
     BooleanLiteral: /true|false/,
-    NumberLiteral: /(?:[0-9]|[1-9][0-9]*)(?:\.[0-9]+)?/,
+    NumberLiteral: /0b[01]*|0o[0-7]*|0x[0-9a-fA-F]*|(?:[1-9][0-9]*|[0-9])(?:\.[0-9]+)?/,
     StringLiteral: /'(?:[^'])*?'|"(?:[^"])*?"/,
     NullLiteral: /null/,
     Keyword: /var|let|const|if|else[\s]+if|else|switch|case|return|for|while|break|continue/,

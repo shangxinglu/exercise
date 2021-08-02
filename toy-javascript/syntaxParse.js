@@ -45,10 +45,10 @@ const SYNTAX = {
         ['Identifier'],
     ],
     Literal: [
-        ['NullIteral'],
-        ['BooleanIteral'],
-        ['NumerIteral'],
-        ["StringIteral"],
+        ['NullLiteral'],
+        ['BooleanLiteral'],
+        ['NumberLiteral'],
+        ["StringLiteral"],
     ],
 
     IfStatement: [
@@ -177,7 +177,7 @@ export function syntaxParse(code) {
 const execObj = {
     Program(node) {
         const [child] = node.children;
-        exec(child);
+        return exec(child);
     },
     StatementList(node) {
         const { children } = node,
@@ -193,15 +193,120 @@ const execObj = {
                 break;
         }
     },
-    Statement(node){
-        const {children} = node;
+    Statement(node) {
+        const { children } = node;
         return exec(children[0]);
-        
+
+    },
+    ExpressionStatement(node) {
+        const { children } = node;
+        return exec(children[0]);
+
+    },
+    Expression(node) {
+        const { children } = node;
+        return exec(children[0]);
+
+    },
+    AdditionExpression(node) {
+        const { children } = node,
+            { length } = children;
+        switch (length) {
+            case 1:
+                return exec(children[0]);
+                break;
+
+            case 3:
+                return exec(children[2]);
+                break;
+        }
     },
 
-    VarDeclaration(node){
-        const {children} = node;
-        console.log('VarDeclaration',children[1].value);
+    MultiplicationExpression(node) {
+        const { children } = node,
+            { length } = children;
+        switch (length) {
+            case 1:
+                return exec(children[0]);
+                break;
+
+            case 3:
+                return exec(children[2]);
+                break;
+        }
+    },
+    PrimaryExpression(node) {
+        const { children } = node,
+            { length } = children;
+        switch (length) {
+            case 1:
+                return exec(children[0]);
+                break;
+
+            case 3:
+                return exec(children[1]);
+                break;
+        }
+    },
+    Literal(node) {
+        const { children } = node;
+        return exec(children[0]);
+    },
+    NullLiteral(node) {
+
+    },
+    NumberLiteral(node) {
+        const str = node.value;
+
+        let len = str.length,
+            i = 0,
+            val = 0,
+            base;
+
+        const perfix = str.substring(0, 2);
+        switch (perfix) {
+            case '0b':
+                base = 2;
+                i = 2;
+                break;
+
+            case '0o':
+                base = 8;
+                i = 2;
+
+                break;
+
+            case '0x':
+                base = 16;
+                i = 2;
+
+                break;
+
+            default:
+                base = 10;
+        }
+
+        let char,charCode,num;
+        while (i < len) {
+            char = str.charAt(i).toLowerCase();
+            charCode = char.charCodeAt(0);
+            if(perfix === '0x'){
+                if(char>='a'){
+                    num = charCode - 'a'.charCodeAt(0)+10;
+                }
+            } else {
+                num = charCode - '0'.charCodeAt(0);
+                
+            }
+            val = val * base + num;
+            i++;
+        }
+
+        console.log(val);
+    },
+    VarDeclaration(node) {
+        const { children } = node;
+        console.log('VarDeclaration', children[1].value);
     }
 }
 
@@ -211,8 +316,7 @@ function exec(node) {
 
 
 const code = `
-    let a;
-    let b;
+    0xff;
 `;
 
 const tree = syntaxParse(code);
