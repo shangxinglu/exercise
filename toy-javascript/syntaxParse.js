@@ -286,23 +286,65 @@ const execObj = {
                 base = 10;
         }
 
-        let char,charCode,num;
+        let char, charCode, num;
         while (i < len) {
             char = str.charAt(i).toLowerCase();
             charCode = char.charCodeAt(0);
-            if(perfix === '0x'){
-                if(char>='a'){
-                    num = charCode - 'a'.charCodeAt(0)+10;
+            if (perfix === '0x') {
+                if (char >= 'a') {
+                    num = charCode - 'a'.charCodeAt(0) + 10;
                 }
             } else {
                 num = charCode - '0'.charCodeAt(0);
-                
+
             }
             val = val * base + num;
             i++;
         }
 
         console.log(val);
+    },
+    StringLiteral(node) {
+        const str = node.value,
+            { length } = str,
+
+            strArr = [];
+
+
+        const singleEscapeMap = {
+            "b": String.fromCharCode(0x0008),
+            "t": String.fromCharCode(0x0009),
+            "n": String.fromCharCode(0x000A),
+            "v": String.fromCharCode(0x000B),
+            "f": String.fromCharCode(0x000C),
+            "r": String.fromCharCode(0x000D),
+            '"': String.fromCharCode(0x0022),
+            "'": String.fromCharCode(0x0027),
+            "\\": String.fromCharCode(0x005c),
+        }
+
+        for (let i = 1; i < length - 1; i++) {
+            const char = str[i];
+            if (char === '\\') {
+                i++;
+                const char = str[i];
+                if (singleEscapeMap[char]) {
+                    strArr.push(singleEscapeMap[char]);
+                } else {
+                    strArr.push(char);
+
+                }
+                continue;
+
+            }
+            strArr.push(char);
+
+        }
+
+        const val = strArr.join('');
+        console.log(strArr);
+        console.log(val);
+
     },
     VarDeclaration(node) {
         const { children } = node;
@@ -314,11 +356,21 @@ function exec(node) {
     return execObj?.[node.type]?.(node);
 }
 
+const textEl = document.getElementById('text');
+const runEl = document.getElementById('run');
 
-const code = `
-    0xff;
-`;
+runEl.addEventListener('click', () => {
+    const code = textEl.value;
+   
+    const tree = syntaxParse(code);
 
-const tree = syntaxParse(code);
+    exec(tree);
+})
 
-exec(tree);
+// const code = `
+//     '1';
+// `;
+
+// const tree = syntaxParse(code);
+
+// exec(tree);
