@@ -49,6 +49,20 @@ const SYNTAX = {
         ['BooleanLiteral'],
         ['NumberLiteral'],
         ["StringLiteral"],
+        ["ObjectLiteral"],
+    ],
+    ObjectLiteral: [
+        ['{', '}'],
+        ['{', 'PropertyList', '}'],
+    ],
+
+    PropertyList: [
+        ['Property'],
+        ['PropertyList', ',', 'Property'],
+    ],
+    Property: [
+        ['StringLiteral', ':', 'AdditionExpression'],
+        ['Identifier', ':', 'AdditionExpression'],
     ],
 
     IfStatement: [
@@ -346,6 +360,54 @@ const execObj = {
         console.log(val);
 
     },
+    ObjectLiteral(node) {
+        const { children } = node,
+            { length } = children;
+        switch (length) {
+            case 2:
+                return {};
+                break;
+
+            case 3:
+                const map = new Map;
+                return this.PropertyList(children[1], map);
+                break;
+        }
+    },
+    PropertyList(node, obj) {
+        const { children } = node,
+            { length } = children;
+        switch (length) {
+            case 1:
+                return this.Property(children[0], obj);
+                break;
+
+            case 3:
+                const map = new Map;
+                return this.Property(children[2], obj);
+                break;
+        }
+    },
+    Property(node, obj) {
+        const { children } = node,
+            [key,p,value] = children;
+        let name;
+        switch (key.type) {
+            case 'Identifier':
+                name = key.value;
+                break;
+
+            case 'StringLiteral':
+                name = this.StringLiteral(key);
+                break;
+        }
+
+        obj.set(name,{
+            value,
+        })
+        debugger
+
+    },
     VarDeclaration(node) {
         const { children } = node;
         console.log('VarDeclaration', children[1].value);
@@ -361,7 +423,7 @@ const runEl = document.getElementById('run');
 
 runEl.addEventListener('click', () => {
     const code = textEl.value;
-   
+
     const tree = syntaxParse(code);
 
     exec(tree);
