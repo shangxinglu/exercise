@@ -11,9 +11,9 @@ const regexpObj = {
     NumberLiteral: /0b[01]*|0o[0-7]*|0x[0-9a-fA-F]*|(?:[1-9][0-9]*|[0-9])(?:\.[0-9]+)?/,
     StringLiteral: /'(?:[^'])*?'|"(?:[^"])*?"/,
     NullLiteral: /null/,
-    Keyword: /var|let|const|if|else[\s]+if|else|switch|case|return|for|while|break|continue/,
+    Keyword: /var|let|const|if|else[\s]+if|else|switch|case|return|for|while|break|continue|new/,
     Identifier: /[A-Za-z$_][A-Za-z0-9$_]*/,
-    Punctuator: /\(|\)|\{|\}|;|\:|\.|\[|\]|\+|\-|\*|\/|\+\+|\-\-|\=|\=\=|\=\=\=|\>|\<|\,|\!/,
+    Punctuator: /\|\||\&\&|\(|\)|\{|\}|;|\:|\.|\[|\]|\+|\-|\*|\/|\+\+|\-\-|\=|\=\=|\=\=\=|\>|\<|\,|\!/,
 }
 
 export function genRegexp(entry) {
@@ -81,6 +81,12 @@ export function* lexicalParse(code){
             //     value,
             // };
     
+        } else if (groups.BooleanLiteral) {
+            yield {
+                type:'BooleanLiteral',
+                value,
+            };
+    
         } else if (groups.NumberLiteral) {
             yield {
                 type:'NumberLiteral',
@@ -116,6 +122,7 @@ export function* lexicalParse(code){
             };
     
         }
+
     }
 
     yield {
