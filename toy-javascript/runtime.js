@@ -67,7 +67,7 @@ export function getCurrentExecStack() {
 
 export class Execution {
 
-    constructor(realm){
+    constructor(realm) {
         this.realm = realm;
     }
 
@@ -158,7 +158,24 @@ export class Execution {
                 break;
 
             case 3:
-                return this.exec(children[2]);
+                let left = this.exec(children[0]),
+                right = this.exec(children[2]),
+                operator = children[1].type;
+
+                if(left instanceof Reference){
+                    left = left.get();
+                }
+
+                if(right instanceof Reference){
+                    right = right.get();
+                }
+
+                if(operator === '+'){
+                    return left+right;
+                } else if (operator === '-'){
+                    return left-right;
+                }
+               
                 break;
         }
     }
@@ -228,14 +245,14 @@ export class Execution {
                 const objRefer = this.exec(children[0]);
                 const obj = objRefer.get();
                 const desc = obj.get(identifier);
-                
-                 const keys = Object.keys(desc);
-                 if(keys.includes('value')){
-                     return desc.value;
-                 } else if (keys.includes('get')){
-                     return desc.get.call(obj);
-                 }
-                 
+
+                const keys = Object.keys(desc);
+                if (keys.includes('value')) {
+                    return desc.value;
+                } else if (keys.includes('get')) {
+                    return desc.get.call(obj);
+                }
+
                 break;
 
             case 4:
@@ -443,7 +460,7 @@ export class Execution {
             case 3:
                 let value = this.exec(children[2]);
                 let variable = this.exec(children[0]);
-               
+
                 return variable.set(value);
                 break;
         }
@@ -453,6 +470,23 @@ export class Execution {
         const { value } = node;
 
         return new Reference(getCurrentExecStack().lexicalEnvironment, value);
+    }
+
+    IfStatement(node) {
+
+        const { children } = node,
+            condition = children[2],
+            statement = children[4];
+
+        let result = this.exec(condition);
+
+        if (result instanceof Reference){
+            result = result.get();
+        }
+        if(result){
+            this.exec(statement);
+        }
+
     }
 
 }
