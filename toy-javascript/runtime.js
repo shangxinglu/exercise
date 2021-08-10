@@ -1,3 +1,12 @@
+import { 
+    JSUndefined,
+    JSNull,
+    JSBoolean,
+    JSNumber,
+    JSString,
+    JSObject,
+    JSSymbol,
+ } from "./type.js";
 
 // 与window绑定的领域
 export class Realm {
@@ -276,10 +285,12 @@ export class Execution {
                 break;
         }
     }
+
     Literal(node) {
         const { children } = node;
         return this.exec(children[0]);
     }
+
     NullLiteral(node) {
 
     }
@@ -287,9 +298,10 @@ export class Execution {
     BooleanLiteral(node) {
         const bool = node.value;
         if (bool === 'true') {
-            return !!1;
+            return new JSBoolean(true);
         } else if (bool === 'false') {
-            return !!0;
+            return new JSBoolean(false);
+
         }
     }
 
@@ -340,8 +352,8 @@ export class Execution {
             i++;
         }
 
-        console.log(val);
-        return val;
+        // console.log(val);
+        return new JSNumber(val);
     }
 
     StringLiteral(node) {
@@ -483,7 +495,7 @@ export class Execution {
         if (result instanceof Reference){
             result = result.get();
         }
-        if(result){
+        if(result.toBoolean().value){
             this.exec(statement);
         }
 
