@@ -1,4 +1,4 @@
-import { 
+import {
     JSUndefined,
     JSNull,
     JSBoolean,
@@ -6,7 +6,7 @@ import {
     JSString,
     JSObject,
     JSSymbol,
- } from "./type.js";
+} from "./type.js";
 
 // 与window绑定的领域
 export class Realm {
@@ -24,6 +24,15 @@ export class EnvironmentRecord {
         this.variable = new Map;
         this.outer = null;
 
+    }
+}
+
+// 完成记录
+export class CompletionRecord {
+    constructor(type, value, target) {
+        this.type = type || 'normal';
+        this.value = value || new JSUndefined;
+        this.target = target || new JSNull;
     }
 }
 
@@ -99,8 +108,11 @@ export class Execution {
                 break;
 
             case 2:
-                this.exec(children[0]);
-                return this.exec(children[1]);
+                const  completeRecord = this.exec(children[0]);
+                if(completeRecord.type === 'normal'){
+                    return this.exec(children[1]);
+                } 
+                return completeRecord;
                 break;
         }
     }
@@ -108,17 +120,41 @@ export class Execution {
     Statement(node) {
         const { children } = node;
         return this.exec(children[0]);
-
     }
+
+    BlockStatement(node) {
+        const { children } = node,
+            { length } = children;
+
+        switch (length) {
+            case 2:
+                return;
+                break;
+
+            case 3:
+
+                return this.exec(children[1]);
+
+                break;
+        }
+    }
+
+    BreakStatement(node){
+        return new CompletionRecord('break');
+    }
+
+    ContinueStatement(node){
+        return new CompletionRecord('continue');
+    }
+
     ExpressionStatement(node) {
         const { children } = node;
-        return this.exec(children[0]);
-
+        return new CompletionRecord('normal', this.exec(children[0]));
     }
+
     Expression(node) {
         const { children } = node;
         return this.exec(children[0]);
-
     }
 
     LogicalORExpression(node) {
@@ -168,23 +204,24 @@ export class Execution {
 
             case 3:
                 let left = this.exec(children[0]),
-                right = this.exec(children[2]),
-                operator = children[1].type;
+                    right = this.exec(children[2]),
+                    operator = children[1].type;
 
-                if(left instanceof Reference){
+                if (left instanceof Reference) {
                     left = left.get();
                 }
 
-                if(right instanceof Reference){
+                if (right instanceof Reference) {
                     right = right.get();
                 }
 
-                if(operator === '+'){
-                    return left+right;
-                } else if (operator === '-'){
-                    return left-right;
+                if (operator === '+') {
+                    return new JSNumber(left + right);
+                } else if (operator === '-') {
+
+                    return new JSNumber(left.value - right.value);
                 }
-               
+
                 break;
         }
     }
@@ -458,6 +495,7 @@ export class Execution {
     VarDeclaration(node) {
         const { children } = node;
         getCurrentExecStack().variableEnvironment[children[1].value] = void 0;
+        return new CompletionRecord('normal', new JSUndefined);
 
     }
 
@@ -492,12 +530,35 @@ export class Execution {
 
         let result = this.exec(condition);
 
-        if (result instanceof Reference){
+        if (result instanceof Reference) {
             result = result.get();
         }
-        if(result.toBoolean().value){
+        if (result.toBoolean().value) {
             this.exec(statement);
         }
+
+    }
+
+    WhileStatement(node) {
+        const { children } = node,
+            condition = children[2],
+            statement = children[4];
+        while (true) {
+            let result = this.exec(condition);
+
+            if (result instanceof Reference) {
+                result = result.get();
+            }
+            if (result.toBoolean().value) {
+                const completionRecord = this.exec(statement);
+                if(completionRecord.type ==='continue') continue;
+
+                if(completionRecord.type === 'break') return new CompletionRecord('normal')
+            } else {
+                break;
+            }
+        }
+
 
     }
 

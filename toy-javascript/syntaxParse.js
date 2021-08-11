@@ -12,12 +12,26 @@ const SYNTAX = {
     ],
 
     Statement: [
+        ['BlockStatement'],
         ['ExpressionStatement'],
         ['IfStatement'],
         ['ForStatement'],
         ['WhileStatement'],
         ['VarDeclaration'],
         ['FunctionDeclaration'],
+        ['BreakStatement'],
+        ['ContinueStatement'],
+    ],
+    BlockStatement:[
+        ['{','}'],
+        ['{','StatementList','}'],
+    ],
+
+    BreakStatement:[
+        ['break',';'],
+    ],
+    ContinueStatement:[
+        ['continue',';'],
     ],
 
     ExpressionStatement: [
@@ -100,6 +114,9 @@ const SYNTAX = {
 
     IfStatement: [
         ['if', '(', 'Expression', ')', 'Statement'],
+    ],
+    WhileStatement:[
+        ['while','(','Expression',')','BlockStatement'],
     ],
 
     VarDeclaration: [

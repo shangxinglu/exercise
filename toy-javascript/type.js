@@ -56,6 +56,10 @@ export class JSUndefined extends JSValue {
 }
 
 export class JSNull extends JSValue {
+    get value(){
+        return null;
+    }
+
     toNumber(){
         return new JSNumber(0);
     }
