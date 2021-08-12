@@ -17,15 +17,62 @@ export class Realm {
     }
 }
 
-// 词法环境
+// 环境记录
 export class EnvironmentRecord {
-    constructor() {
-        this.thisValue = null;
+    constructor(outer) {
         this.variable = new Map;
-        this.outer = null;
+        this.outer = outer;
+    }
+
+    add(name) {
+        this.variable.set(name, new JSUndefined);
+
+    }
+
+    set(name, value = new JSUndefined) {
+        if (this.variable.has(name)) {
+            return this.variable.set(name, value);
+        } else if (this.outer) {
+            return this.outer.set(name, value);
+        } else {
+            return this.variable.set(name, value);
+        }
+
+    }
+
+    get(name) {
+        if (this.variable.has(name)) {
+            return this.variable.get(name);
+        } else if (this.outer) {
+            return this.outer.get(name);
+        }
+
+        return new JSUndefined;
+    }
+}
+
+export class ObjectEnvironmentRecord {
+    constructor(obj) {
+        this.object = obj;
+    }
+
+    add(name) {
+        this.object.set(name, new JSUndefined);
+
+    }
+
+    set(name, value = new JSUndefined) {
+
+        this.object.set(name, value);
+    }
+
+    get(name) {
+        return this.object.get(name);
 
     }
 }
+
+
 
 // 完成记录
 export class CompletionRecord {
@@ -55,13 +102,13 @@ export class Reference {
 
     set(value) {
         const { object, property } = this;
-        object[property] = value;
+        object.set(property,value);
     }
 
     get() {
         const { object, property } = this;
 
-        return object[property];
+        return object.get(property);
     }
 }
 
@@ -108,10 +155,10 @@ export class Execution {
                 break;
 
             case 2:
-                const  completeRecord = this.exec(children[0]);
-                if(completeRecord.type === 'normal'){
+                const completeRecord = this.exec(children[0]);
+                if (completeRecord.type === 'normal') {
                     return this.exec(children[1]);
-                } 
+                }
                 return completeRecord;
                 break;
         }
@@ -139,17 +186,22 @@ export class Execution {
         }
     }
 
-    BreakStatement(node){
+    BreakStatement(node) {
         return new CompletionRecord('break');
     }
 
-    ContinueStatement(node){
+    ContinueStatement(node) {
         return new CompletionRecord('continue');
     }
 
     ExpressionStatement(node) {
         const { children } = node;
-        return new CompletionRecord('normal', this.exec(children[0]));
+        let result = this.exec(children[0]);
+        debugger
+        if(result instanceof Reference){
+            result = result.get();
+        }
+        return new CompletionRecord('normal', result);
     }
 
     Expression(node) {
@@ -216,9 +268,9 @@ export class Execution {
                 }
 
                 if (operator === '+') {
-                    return new JSNumber(left + right);
+                    return new JSNumber(left.value + right.value);
                 } else if (operator === '-') {
-
+                    debugger
                     return new JSNumber(left.value - right.value);
                 }
 
@@ -494,7 +546,7 @@ export class Execution {
 
     VarDeclaration(node) {
         const { children } = node;
-        getCurrentExecStack().variableEnvironment[children[1].value] = void 0;
+        getCurrentExecStack().variableEnvironment.add(children[1].value);
         return new CompletionRecord('normal', new JSUndefined);
 
     }
@@ -551,9 +603,9 @@ export class Execution {
             }
             if (result.toBoolean().value) {
                 const completionRecord = this.exec(statement);
-                if(completionRecord.type ==='continue') continue;
+                if (completionRecord.type === 'continue') continue;
 
-                if(completionRecord.type === 'break') return new CompletionRecord('normal')
+                if (completionRecord.type === 'break') return new CompletionRecord('normal')
             } else {
                 break;
             }

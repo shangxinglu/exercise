@@ -129,6 +129,20 @@ export class JSObject extends JSValue {
         this.prototype = proto|| null;
     }
 
+    set(name,value){
+
+        this.setProperty(name,{
+            value,
+            enumerable:true,
+            writable:true,
+            configurable:true,
+        })
+    }
+
+    get(name){
+        return this.getProperty(name).value;
+    }
+
     setPrototype(proto){
         this.prototype = proto;
     }
@@ -139,6 +153,10 @@ export class JSObject extends JSValue {
 
     setProperty(name,value){
         this.properties.set(name,value);
+    }
+
+    getProperty(name){
+        return this.properties.get(name);
     }
 }
 

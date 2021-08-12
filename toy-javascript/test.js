@@ -1,9 +1,18 @@
 import syntaxParse from './syntaxParse.js';
-import { Execution, Realm, ExecutionContext, pushExecStack } from './runtime.js';
+import {
+    Execution,
+    Realm,
+    ExecutionContext,
+    pushExecStack,
+    EnvironmentRecord,
+    ObjectEnvironmentRecord
+} from './runtime.js';
+
+import { JSObject } from './type.js';
 
 const realm = new Realm;
-const global = {};
-const execCtx = new ExecutionContext(realm, global);
+const global = new JSObject;
+const execCtx = new ExecutionContext(realm, new ObjectEnvironmentRecord(global),new ObjectEnvironmentRecord(global));
 
 pushExecStack(execCtx);
 
