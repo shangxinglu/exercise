@@ -102,7 +102,7 @@ export class Reference {
 
     set(value) {
         const { object, property } = this;
-        object.set(property,value);
+        object.set(property, value);
     }
 
     get() {
@@ -110,6 +110,15 @@ export class Reference {
 
         return object.get(property);
     }
+}
+
+// 解除引用
+function dismiss(ref) {
+    if (ref instanceof Reference) {
+        ref = ref.get();
+    }
+
+    return ref;
 }
 
 const execStack = []; // 执行栈
@@ -179,9 +188,16 @@ export class Execution {
                 break;
 
             case 3:
+                const { realm, lexicalEnvironment, variableEnvironment } = getCurrentExecStack();
+                const context = new ExecutionContext(realm,
+                    new EnvironmentRecord(lexicalEnvironment),
+                    new EnvironmentRecord(variableEnvironment)
+                );
+                pushExecStack(context);
+                const result = this.exec(children[1]);
+                popExecStack();
 
-                return this.exec(children[1]);
-
+                return result;
                 break;
         }
     }
@@ -197,8 +213,8 @@ export class Execution {
     ExpressionStatement(node) {
         const { children } = node;
         let result = this.exec(children[0]);
-        debugger
-        if(result instanceof Reference){
+        // debugger
+        if (result instanceof Reference) {
             result = result.get();
         }
         return new CompletionRecord('normal', result);
@@ -299,11 +315,75 @@ export class Execution {
 
     }
 
-    // CallExpression(node){
-    //     const { children } = node;
+    CallExpression(node) {
+        const { children } = node;
 
-    //     return this.exec(children[0]);
-    // }
+        let fun = this.exec(children[0]),
+            args = this.exec(children[1]);
+
+        if (fun instanceof Reference) {
+            fun = fun.get();
+        }
+
+        return fun.call(args);
+    }
+
+    Arguments(node) {
+        const { children } = node,
+            { length } = children;
+        switch (length) {
+            case 2:
+                return [];
+                break;
+
+            case 3:
+
+                return this.exec(node.children[1]);
+
+                // const obj = this.realm.Object.construct();
+                // const cls = this.exec(children[1]);
+                // const instace = cls.call(obj);
+
+                // if(typeof instace ==='object'){
+                //     return instace;
+                // } else {
+                //     return obj;
+                // }
+                break;
+        }
+    }
+
+    ArgumentsList(node) {
+        const { children } = node,
+            { length } = children;
+
+        let result;
+
+        switch (length) {
+            case 1:
+                result = this.exec(children[0]);
+                result = dismiss(result);
+                return [result];
+                break;
+
+            case 3:
+                result = this.exec(children[2]);
+                result = dismiss(result);
+
+                return this.exec(children[0]).concat(result);
+
+                // const obj = this.realm.Object.construct();
+                // const cls = this.exec(children[1]);
+                // const instace = cls.call(obj);
+
+                // if(typeof instace ==='object'){
+                //     return instace;
+                // } else {
+                //     return obj;
+                // }
+                break;
+        }
+    }
 
     NewExpression(node) {
         const { children } = node,
@@ -546,9 +626,35 @@ export class Execution {
 
     VarDeclaration(node) {
         const { children } = node;
-        getCurrentExecStack().variableEnvironment.add(children[1].value);
+        getCurrentExecStack().lexicalEnvironment.add(children[1].value);
         return new CompletionRecord('normal', new JSUndefined);
 
+    }
+
+    FunctionDeclaration(node) {
+        const { children } = node,
+            { length } = children;
+        const identifier = children[1].value,
+            code = children[length - 2];
+
+        const fun = new JSObject;
+
+        fun.call = args => {
+            const newCtx = new ExecutionContext(this.realm,
+                new EnvironmentRecord(fun.environment),
+                new EnvironmentRecord(fun.environment));
+                
+            pushExecStack(newCtx);
+            this.exec(code);
+            popExecStack();
+        }
+
+        const context = getCurrentExecStack();
+        fun.environment = context.lexicalEnvironment;
+        context.lexicalEnvironment.set(identifier, fun);
+
+
+        return new CompletionRecord('normal');
     }
 
     AssignmentExpression(node) {
@@ -613,6 +719,7 @@ export class Execution {
 
 
     }
+
 
 }
 

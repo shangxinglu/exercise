@@ -74,6 +74,15 @@ const SYNTAX = {
         ['MemberExpression', 'Arguments'],
         ['CallExpression', 'Arguments'],
     ],
+    Arguments:[
+        ['(',')'],
+        ['(','ArgumentsList',')'],
+    ],
+
+    ArgumentsList:[
+        ['AssignmentExpression'],
+        ['ArgumentsList',',','AssignmentExpression']
+    ],
 
     NewExpression: [
         ['MemberExpression'],
@@ -123,6 +132,9 @@ const SYNTAX = {
         ['var', 'Identifier', ';'],
         ['let', 'Identifier', ';'],
     ],
+    FunctionDeclaration:[
+        ['function','Identifier','(',')','{','StatementList','}'],
+    ]
 
 }
 
@@ -230,6 +242,7 @@ export default function syntaxParse(code) {
         }
 
     }
+
     for (let token of lexicalParse(code)) {
         shift(token);
     }

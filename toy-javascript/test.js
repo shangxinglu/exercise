@@ -12,6 +12,12 @@ import { JSObject } from './type.js';
 
 const realm = new Realm;
 const global = new JSObject;
+
+global.set('log',new JSObject);
+global.get('log').call = args=>{
+    console.log(args);
+}
+
 const execCtx = new ExecutionContext(realm, new ObjectEnvironmentRecord(global),new ObjectEnvironmentRecord(global));
 
 pushExecStack(execCtx);

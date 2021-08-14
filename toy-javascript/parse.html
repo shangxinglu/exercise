@@ -12,19 +12,20 @@
 
 <body>
   <textarea id="text" cols="30" rows="10">
-      {
-        let a;
-        a = 1;
-        {
-         
-          a = a + 1;
+    let a;
+    a =1;
+    function f1(){
+     a =3;
+    }
+    {
+      let a;
+      a = 2;
+      f1();
 
-        }
+    }
+    log(a);
 
-      }
-      a;
 
-    
     </textarea>
 
   <button id="run">run</button>

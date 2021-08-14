@@ -11,7 +11,7 @@ const regexpObj = {
     NumberLiteral: /0b[01]*|0o[0-7]*|0x[0-9a-fA-F]*|(?:[1-9][0-9]*|[0-9])(?:\.[0-9]+)?/,
     StringLiteral: /'(?:[^'])*?'|"(?:[^"])*?"/,
     NullLiteral: /null/,
-    Keyword: /var|let|const|if|else[\s]+if|else|switch|case|return|for|while|break|continue|new/,
+    Keyword: /var|let|const|if|else[\s]+if|else|switch|case|return|for|while|break|continue|new|function/,
     Identifier: /[A-Za-z$_][A-Za-z0-9$_]*/,
     Punctuator: /\|\||\&\&|\(|\)|\{|\}|;|\:|\.|\[|\]|\+|\-|\*|\/|\+\+|\-\-|\=|\=\=|\=\=\=|\>|\<|\,|\!/,
 }
