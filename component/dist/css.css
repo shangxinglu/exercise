@@ -1,0 +1,14 @@
+.carousel {
+    overflow: hidden;
+    width: 500px;
+    height: 280px;
+    white-space: nowrap;
+}
+
+.carousel__item{
+    display: inline-block;
+    width: 500px;
+    height: 280px;
+    background-size: contain;
+    transition: ease .5s;
+}
