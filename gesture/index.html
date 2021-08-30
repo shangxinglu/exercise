@@ -1,0 +1,9 @@
+
+
+<script type="module">
+    import {enableGesture} from './gesture.js';
+    enableGesture(document.documentElement);
+    document.documentElement.addEventListener('tap', e => {
+        console.log('tap', e);
+    })
+</script>
