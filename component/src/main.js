@@ -11,9 +11,9 @@ const data = ['https://static001.geekbang.org/resource/image/1b/21/1b809d9a2bdf3
 
 let carousel = <Carousel src={data} />
 
-const timeline = new Timeline;
-const animation = new Animation({}, 'width', 0, 0,  200,1000, 500);
-timeline.add(animation);
-timeline.start();
+// const timeline = new Timeline;
+// const animation = new Animation({}, 'width', 0, 0,  200,1000, 500);
+// timeline.add(animation);
+// timeline.start();
 
 carousel.mountTo(document.body);

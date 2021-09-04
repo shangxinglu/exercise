@@ -7,6 +7,7 @@ const PAUSE_TIME = Symbol('pause_time');
 
 export class Timeline {
     constructor() {
+        this.state = 'init';
         this[ANIMATION] = new Set;
         this[START_TIME] = new Map;
     }
@@ -19,6 +20,8 @@ export class Timeline {
 
     // 开始
     start() {
+        if(this.state !=='init') return;
+        this.state = 'start';
         const queue = this[ANIMATION];
         const startTime = Date.now();
         this[PAUSE_TIME] = 0;
@@ -50,18 +53,25 @@ export class Timeline {
 
     // 暂停
     pause() {
+        if(this.state !=='start') return;
+        
+        this.state = 'pause';
          this[PAUSE_START] = Date.now();
         cancelAnimationFrame(this[TICK_HANDLER]);
     }
 
     // 恢复
     resume() {
+        if(this.state !=='pause') return;
+        
+        this.state = 'start';
        this[PAUSE_TIME] = Date.now() - this[PAUSE_START];
        this[TICK]();
     }
 
     // 重置
     reset() {
+        this.state = 'init';
         this.pause();
         this[ANIMATION] = new Set;
         this[START_TIME] = new Map;
@@ -101,7 +111,6 @@ export class Animation {
 
     receive(time) {
         const { object, property, startValue, endValue, duration,template } = this;
-        console.log(time);
         const range = endValue - startValue;
         object.style[property] = template(startValue + range * time / duration);
     }
