@@ -37,8 +37,12 @@ export class Carousel extends Component {
         this.root.addEventListener('start',e=>{
             timeLine.pause();
             clearInterval(timer);
-            let progress = (Date.now() - t)/duration;
-            ax = 500*progress-500;
+            if(t>0){
+                let progress = (Date.now() - t)/duration;
+                console.log(t,Date.now() - t);
+                ax = 500*progress-500;
+            }
+     
 
         })
 
@@ -57,16 +61,34 @@ export class Carousel extends Component {
         })
 
         this.root.addEventListener('panend',e=>{
+            timeLine.reset();
+            timeLine.start();
+            timer= setInterval(nextHandler, 3000);
+   
             let x = e.clientX - e.startX-ax;
-            position = position - Math.round(x / 500);  
+            let current = position - (x - x % 500) / 500;
+            let direction = Math.round((x - x % 500) / 500);
 
             let index;
-            for (let offset of [0,Math.sign(x%500 - Math.sign(x)*250)]) {
-                index = (position + offset + length) % length;
-                children[index].style.transition = '';
-                children[index].style.transform = `translateX(${-index * 500 + offset * 500}px)`;
-                // console.log(index,offset,`translateX(${-index * 500 + offset * 500}px)`);
+            const changeArr = [-1, 0, 1];
+            for (let offset of changeArr) {
+                index = ((current + offset)%length + length) % length;
+                children[index].style.transition = 'none';
+                timeLine.add(new Animation({
+                    object:children[index],
+                    property:'transform',
+                    startValue:-index * 500 + offset * 500 + x % 500,
+                    endValue:-index * 500 + offset * 500 + direction * 500,
+                    duration,
+                    template:value=>`translateX(${value}px)`,
+                    
+                }))
+
+                position = position - ((x-x%500)/500) -direction;
+                position = (position%length+position)%length;
+
             }
+       
         })
         //  let currentIndex = 0,
         //     nextIndex;

@@ -264,7 +264,7 @@ export class Dispatcher {
     // 事件派发
     dispatch(type, properties = {}) {
         const event = new Event(type);
-        console.log(`dispatch ${type}`);
+        // console.log(`dispatch ${type}`);
         for (let key of Object.keys(properties)) {
             event[key] = properties[key];
         }
