@@ -1,0 +1,39 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+
+
+// 手动实现new
+function myNew(fn,...args){
+    const obj = Object.create(fn)
+    Object.setPrototypeOf(obj,fn.prototype);
+    console.log(fn.prototype);
+    const result = fn.apply(obj,args);
+
+    return typeof result === 'object' ? result : obj;
+}
+
+function test1(){
+    this.name = '124'
+}
+
+console.log(myNew(test1) );
+
+// 实现Object.create
+function myCreate(obj){
+    function f(){}
+    f.prototype = obj;
+    return new f();
+}
+
+</script>
+</html>

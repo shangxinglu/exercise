@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- <script src="./index.js"></script> -->
+    <script src="./index2.js"></script>
+    <!-- <script src="./index3.js"></script> -->
+    <script>
+
+        // const p1 = new Promise((resolve,reject)=>{
+        const p1 = new MyPromise((resolve,reject)=>{
+            resolve(1)
+        })
+
+        // const p4 = new MyPromise((resolve,reject)=>{
+        //     resolve('p4')
+        // })
+
+        const p2 = p1.then((res)=>{
+            console.log('p2',res);
+            return 2;
+        })
+
+        const p3 = p1.then((res)=>{
+            console.log('p3',res);
+            return p2;
+            // return p4
+        })
+
+        p3.then((res)=>{
+            console.log('p4',res);
+        })
+
+
+    </script>
+</head>
+<body>
+    
+</body>
+</html>

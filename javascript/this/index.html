@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+
+<script>
+    var a;
+    var b;
+    a = 1;
+    b = 2;
+
+    {
+        console.log('a',a, 'window.a', window.a);
+        console.log('b',b, 'window.b', window.b);
+        function a() {}
+        console.log('a',a, 'window.a', window.a);
+
+    }
+
+    console.log('a',a, 'window.a', window.a);
+    console.log('b',b, 'window.b', window.b);
+
+
+    // 手写apply
+
+    Function.prototype.myApply = function(context,args=[]){
+        context = context || window;
+        context.fn = this;
+
+        const result = context.fn(...args);
+        delete context.fn;
+
+        return result;
+
+    }
+
+    function test(){
+        console.log(this.a);
+    }
+
+    test.myApply({a:1},);
+
+    // 手写bind
+    Function.prototype.myBind = function(context,...args){
+        context = context || window;
+        const _this = this;
+        return function(...args2){
+            return _this.myApply(context,[...args,...args2]);
+        }
+    }
+
+    function test2(){
+        console.log(this.a);
+    }
+
+    test2.myBind({a:1},)();
+
+
+    
+</script>
+
+</html>
