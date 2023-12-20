@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            padding: 0;
+        }
+        .w-\[200px\] {
+            width: 200px;
+        }
+
+        .w-\[400px\] {
+            width: 400px;
+        }
+
+
+
+        .h-\[200px\] {
+            height: 200px;
+        }
+
+        .h-\[400px\] {
+            height: 400px;
+        }
+
+        .bg-cyan{
+            background-color: cyan;
+        
+        }
+
+        .overflow-y-scroll{
+            overflow-y: scroll;
+        }
+
+        .border-\[10px\] {
+            border: 10px solid red;
+
+        }
+
+        .mt-\[50px\] {
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div  class="parent1 mt-[50px] w-[200px] h-[200px] bg-cyan overflow-y-scroll border-[10px]">
+        <div class="h-[400px]"></div>
+    </div>
+</body>
+<script>
+
+    const parent1El = document.querySelector('.parent1')
+    parent1El.scrollTop = 100;
+
+    console.log('parent1El offsetWidth 包含滚动条宽度和border宽度',parent1El.offsetWidth);
+    console.log('parent1El clientWidth',parent1El.clientWidth);
+
+    console.log('parent1 offsetTop',parent1El.offsetTop);
+    console.log('parent1 scrollTop',parent1El.scrollTop);
+
+    console.log('innerWidth',window.innerWidth);
+    console.log('innerHeight',window.innerHeight);
+
+    const rect = parent1El.getBoundingClientRect();
+    console.log('rect',rect);
+</script>
+</html>

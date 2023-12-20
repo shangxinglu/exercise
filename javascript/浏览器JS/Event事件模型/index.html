@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <div>
+        <ul class="parent1">
+            <li>1</li>
+            <li>2</li>
+            <li>3</li>
+            <li>4</li>
+            <li>5</li>
+            <li>6</li>
+        </ul>
+    </div>
+    
+</body>
+<script>
+
+    // 手写兼容时间绑定函数
+    class BindEvent  {
+        constructor(el){
+            this.el = el;
+        }
+
+        addEventListener(type,handler){
+            if(this.el.addEventListener){
+                this.el.addEventListener(type,handler,false);
+            } else if (this.el.attachEvent){
+                this.el.attachEvent('on'+type,handler)
+            } else {
+                this.el['on'+type] = handler;
+            }
+        }
+
+
+        removeEventListener(type,handler){
+            if(this.el.removeEventListerner){
+                this.el.removeEventListener(type,handler)
+            } else if(this.el.detachEvent){
+                this.el.detachEvent('on'+type,handler)
+            } else 
+            this.el['on'+type] = null
+        }
+
+        stopPropagation(e){
+            if(e.stopPropagation){
+                e.stopPropagation()
+            } else {
+                e.cancelBubble= true
+            }
+        }
+
+        preventDefault(e){
+            if(e.preventDefault){
+                e.preventDefault()
+            } else {
+                e.returnValue = false
+            }
+        }
+
+    
+    }
+
+    const parent1El = document.querySelector('.parent1')
+    const bindEvent = new BindEvent(parent1El)
+    const onClick = ()=>{
+        console.log('click');
+    }
+    bindEvent.addEventListener('click',onClick)
+
+</script>
+</html>
