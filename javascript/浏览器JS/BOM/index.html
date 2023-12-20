@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+
+    // 实现一个url解析函数
+    const parseUrl = url=>{
+        let splitArr = url.split('//');
+
+        const protocol =  splitArr[0];
+        splitArr = splitArr[1].split('/');
+        const host = splitArr[0] 
+        const port = host.split(':')[1] || 80;
+        const origin = protocol + '//' + host;
+
+        let beforeUrl = splitArr.slice(1).join('/').split('#')[0]
+        let hash = splitArr.slice(1).join('/').split('#')[1] || '';
+        hash = hash ? '#'+hash : '';
+        let  search = beforeUrl.split('?').slice(1).join('?');
+        search = search ? '?'+search : '';
+        beforeUrl = beforeUrl.split('?')[0];
+        const pathname = '/'+beforeUrl
+
+        return {
+            protocol,
+            host,
+            port,
+            origin,
+            hash,
+            search,
+            pathname
+        }
+    }
+
+
+        const test1 = 'https://www.baidu.com:8080/123/456/789?name=123&age=456#hash';
+        const test2 = 'https://www.baidu.com:8080/123/456/789#hash';
+        const test3 = 'https://www.baodu.com'
+        console.log(parseUrl(test1));
+        console.log(parseUrl(test2));
+        console.log(parseUrl(test3));
+
+        // 解析URL通过正则实现
+        const parseUrl2 = url =>{
+            const regExp = /^(?<protocol>[^:]+):\/\/(?<hostname>[^/:]+)?:?(?<port>[0-9]+)?(?<pathname>[^?#]+)?(?<search>\?[^#]+)?(?<hash>.*)?/
+            const result = url.match(regExp);
+            const {
+                protocol = '',
+                hostname = '',
+                pathname ='/',
+                search = '',
+                port = '',
+                hash = ''
+            } = result.groups;
+            let host  = hostname;
+            if(port){
+                host = hostname + ':' + port;
+            }
+            
+            return {
+                protocol,
+                hostname,
+                port,
+                pathname,
+                origin: protocol + '://' + host,
+                host,
+                search,
+                hash
+            }
+        }
+
+        console.log(parseUrl2(test1));
+        console.log(parseUrl2(test2));
+        console.log(parseUrl2(test3));
+
+
+
+
+
+
+
+</script>
+</html>
